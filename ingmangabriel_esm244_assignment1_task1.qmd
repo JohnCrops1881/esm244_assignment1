@@ -1,0 +1,100 @@
+---
+title: "ingmangabriel_esm244_assignment1_task1"
+format: 
+  html:
+    code-fold: true
+    toc: true
+    number-sections: true
+editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r setup}
+
+library(tidyverse)
+library(here)
+library(tsibble)
+library(feasts)
+library(lubridate)
+library(fable)
+library(patchwork)
+
+#install.packages('patchwork')
+
+```
+
+# Task 1
+
+1.  A graph of total **mountain yellow-legged frog (Rana muscosa) count** each year across all water bodies, by life stage **excluding the ‘EggMass’ level**. 
+
+2.  A column graph containing total counts (over all years of the study) of **combined adult and subadult endangered mountain yellow-legged frogs** (Rana muscosa) observed in the 5 lakes with the greatest total observed counts. 
+
+**Combine your two graphs into a single compound figure using patchwork or cowplot.** 
+
+-   Add a finalized figure caption that appears below the compound figure in your rendered html.  The caption should include a brief overall explanation of the multi-panel figure, and then for each part (A and B) a brief explanation of that panel.
+
+-   **Note:** You might realize once you combine your graphs into a single compound figure, you need to update the formatting (e.g. move legends or instead directly label, etc.). You should customize as necessary to make it a professional final output.
+
+### Task 1: Graph 1
+
+```{r datawrangle}
+
+amphibians_raw <- read.csv(here("data", "sierra_amphibians.csv"))
+```
+
+```{r filtergraph1}
+
+amphibians_filtered <- amphibians_raw %>% 
+  mutate(date = lubridate::mdy(survey_date)) %>% 
+  filter(amphibian_species == 'RAMU') %>% 
+  mutate(recorded_year = year(date)) %>% 
+  filter(amphibian_life_stage == 'Tadpole' | amphibian_life_stage == 'Adult' | amphibian_life_stage == 'SubAdult') %>% 
+  group_by(recorded_year, amphibian_life_stage) %>% 
+  count()
+```
+
+```{r graph1}
+
+frog_graph1 <- ggplot(data = amphibians_filtered, mapping = aes(x = recorded_year, y = n, group = amphibian_life_stage)) + 
+  geom_line(aes(color = amphibian_life_stage)) +
+  labs(title = 'Total Yellow-Legged Frog (Rana Muscosa) Count By Year', x = 'Year', y = 'Amphibian Count') +
+  theme_light()
+  
+  
+```
+
+### Task 1: Graph 2
+
+```{r filterdata2}
+
+sierra_top_5 <- amphibians_raw %>% 
+  filter(amphibian_species == 'RAMU') %>% 
+  filter(amphibian_life_stage == 'Adult' | amphibian_life_stage == 'SubAdult') %>% 
+  group_by(lake_id) %>% 
+  summarise(n = n()) %>% 
+  mutate(lake_string = paste('Lake', lake_id)) %>% #I won't pretend that the following code for this chunk was my idea. This was devised by a friend of mine who works at Fish and Wildlife on a Discord call. They are way better at R than me. This turns the lake_id column into a string that can be more easily called by other functions.
+  slice_max(n, n = 5) %>% #selecting the lakes in the top 5
+  mutate(lake_string = fct_reorder(lake_string, n, .fun = 'max'))
+
+```
+
+```{r graph2}
+
+frog_graph2 <- ggplot(data = sierra_top_5, aes(x = lake_string, y = n)) +
+  geom_col(
+    colour = 'cornflowerblue'
+  ) +
+  labs(
+    title = 'Top Five Lakes for Adult and SubAdult Rana Muscosa',
+    x = 'Amphibian Count',
+    y = 'Lake',
+    cex.main = .25
+  ) +
+  theme_light()
+
+frog_graph2
+
+```
