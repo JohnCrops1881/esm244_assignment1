@@ -1,5 +1,7 @@
 ---
-title: "ingmangabriel_esm244_assignment1_task1"
+title: "ESM 244 Assignment 1, Task 1: Study of Mountain Yellow-Legged Frogs (Rana Muscosa)"
+author: 'Gabriel Ingman'
+date: '02-01-24'
 format: 
   html:
     code-fold: true
@@ -11,6 +13,12 @@ execute:
   message: false
   warning: false
 ---
+
+![Mountain Yellow-Legged Frog (Rana Muscosa)](Rana_Muscosa.jpeg){fig-align="center"}
+
+## Data Summary
+
+The Sierra Lakes Inventory Project (SLIP) was a research endeavor that ran from 1995-2002 and has supported research and management of Sierra Nevada aquatic ecosystems and their terrestrial interfaces. We described the physical characteristics of and surveyed aquatic communities for \>8,000 lentic water bodies in the southern Sierra Nevada, including lakes, ponds, marshes, and meadows.
 
 ```{r setup}
 
@@ -26,19 +34,7 @@ library(patchwork)
 
 ```
 
-# Task 1
-
-1.  A graph of total **mountain yellow-legged frog (Rana muscosa) count** each year across all water bodies, by life stage **excluding the ‘EggMass’ level**. 
-
-2.  A column graph containing total counts (over all years of the study) of **combined adult and subadult endangered mountain yellow-legged frogs** (Rana muscosa) observed in the 5 lakes with the greatest total observed counts. 
-
-**Combine your two graphs into a single compound figure using patchwork or cowplot.** 
-
--   Add a finalized figure caption that appears below the compound figure in your rendered html.  The caption should include a brief overall explanation of the multi-panel figure, and then for each part (A and B) a brief explanation of that panel.
-
--   **Note:** You might realize once you combine your graphs into a single compound figure, you need to update the formatting (e.g. move legends or instead directly label, etc.). You should customize as necessary to make it a professional final output.
-
-### Task 1: Graph 1
+### Task 1: Code for Graph 1
 
 ```{r datawrangle}
 
@@ -63,10 +59,9 @@ frog_graph1 <- ggplot(data = amphibians_filtered, mapping = aes(x = recorded_yea
   labs(title = 'Total Yellow-Legged Frog (Rana Muscosa) Count By Year', x = 'Year', y = 'Amphibian Count') +
   theme_light()
   
-  
 ```
 
-### Task 1: Graph 2
+### Task 1: Code for Graph 2
 
 ```{r filterdata2}
 
@@ -95,6 +90,29 @@ frog_graph2 <- ggplot(data = sierra_top_5, aes(x = lake_string, y = n)) +
   ) +
   theme_light()
 
-frog_graph2
+```
+
+### Patchwork Figure
+
+```{r}
+
+combined_plot <- frog_graph1 + frog_graph2 + plot_layout(nrow = 2)
+
+combined_plot + plot_annotation(
+  title = 'Findings from Graphs 1 + 2',
+  subtitle = 'regarding rana muscosa'
+)
 
 ```
+
+### Summary of Findings
+
+Graphs compiled using data from the Sierra Lakes Inventory Project. Graph 1 (top) graphs total frog count by life stage, excluding EggMass, across all bodies of water. Graph 2 combines counts of frogs in the Adult and Subadult life stage, and shows the top 5 lakes by greatest observed counts.
+
+-   For figure 1, years 1996 to 1997 saw a spike in observed frogs across all life stages- Adult, SubAdult, and Tadpole. Then, observations saw a decline until 2001, before spiking again in 2002.
+
+-   For figure 2, the lake that featured the highest count of frogs was Lake 50183.
+
+### Citations
+
+Knapp, R.A., C. Pavelka, E.E. Hegeman, and T.C. Smith. 2020. The Sierra Lakes Inventory Project: Non-Native fish and community composition of lakes and ponds in the Sierra Nevada, California ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d835832d7fd00d9e4466e44eea87fab3

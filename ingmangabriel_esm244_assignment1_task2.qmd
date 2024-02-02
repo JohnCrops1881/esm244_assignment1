@@ -1,0 +1,175 @@
+---
+title: "ESM 244 Assignment 1, Task 2: Willamette Falls Fish Passage Time Series Summary"
+author: 'Gabriel Ingman'
+date: '02-01-24'
+format: 
+  html:
+    code-fold: true
+    toc: true
+    number-sections: true
+editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+
+library(tidyverse)
+library(here)
+library(tsibble)
+library(feasts)
+library(lubridate)
+library(fable)
+library(patchwork)
+library(season)
+library(ggplot2)
+
+```
+
+```{r data}
+
+raw_fish <- read.csv(here("data", "willamette_fish_passage.csv"))
+
+```
+
+# Task 2 Description
+
+## **Part 1: Original time series**
+
+-   A finalized, static graph of adult passage for **coho**, **jack coho**, and **steelhead** salmon (you decide if these all occupy the same panel, or if they are in separate panels). Add a figure caption. **Replace NA values with zero.** 
+
+-   2 - 3 bullet points summarizing major patterns / notable trends in the salmon passage time series data
+
+## **Part 2: Seasonplots**
+
+-   A finalized seasonplot for each species (**coho, jack coho, steelhead)** in its own panel. You can either **facet_wrap**/**facet_grid**, or use **patchwork** or **cowplot**, to make the figure. Add a figure caption.
+
+-   Add 2 - 3 bullet points summarizing the major trends you see in the seasonplots.
+
+## **Part 3: Annual counts by species**
+
+-   A finalized figure of **annual totals** for fish passage, for each of the 3 species. You decide if this is in a single panel or multiple panels. Add a figure caption. 
+
+-   Add 2 - 3 bullet points summarizing major trends you see in the annual totals by species from 2000 - 2010.
+
+![A Look into the Willamette Fish Ladder](Willamette_Fish_Ladder.jpeg){fig-align="center"}
+
+## Data Summary
+
+This report analyses data recorded by the Columbia Basin Research team, of counts of adult fish passing through the Willamette Falls Fish Ladder in Oregon from 01-01-2001 to 12-31-2010. It separates counts by fish species, and makes note of the time and species of each fish observed.
+
+This report focuses on Coho, Jack Coho, and Steelhead Salmon, and seeks to analyze trends for each species in a series of graphs: a time series analysis, a seasonplot, and an annual count graph.
+
+### Graph 1: Time Series
+
+```{r data1}
+
+raw_fish[is.na(raw_fish)] <- 0 #replaced NA values with 0
+
+filtered_fish <- raw_fish %>% 
+  dplyr::select(Date, Coho, Jack.Coho, Steelhead) %>% 
+  mutate(Observed_Date = lubridate::mdy(Date)) %>% 
+  as_tsibble(key = NULL)
+  
+
+
+```
+
+```{r graph1}
+
+fish_graph_1 <- ggplot(filtered_fish, aes(x = Observed_Date)) +
+  geom_line(aes(y = Coho, color = "Coho")) +
+  geom_line(aes(y = Jack.Coho, color = "Jack.Coho")) +
+  geom_line(aes(y = Steelhead, color = "Steelhead")) +
+  labs(title = "Time Series of Salmon Passage through Willamette Falls",
+       x = "Year",
+       y = "Passage Count",
+       caption = "Figure 1: Time series of adult fish counts for coho, jack coho, and steelhead salmon.") +
+  scale_color_manual(values = c("Coho" = "blue", "Jack.Coho" = "red", "Steelhead" = "green"))
+
+fish_graph_1
+
+
+```
+
+-   The most observed fish, on average, is the Steelhead.
+
+-   Coho Salmon saw a spike in observations from 2010 onwards.
+
+-   The least observed fish were the Jack Coho Salmon.
+
+### Graph 2: Seasonplot
+
+```{r graph2}
+
+fish_graph_2_coho <- ggplot(filtered_fish, aes(x = Observed_Date, y = Coho)) +
+  geom_line() +
+  labs(
+    title = 'Coho Seasonal Observations',
+    x = 'Year',
+    y = 'Count'
+    )
+
+fish_graph_2_jackcoho <- ggplot(filtered_fish, aes(x = Observed_Date, y = Jack.Coho)) +
+  geom_line() +
+  labs(
+    title = 'Jack.Coho Seasonal Observations',
+    x = 'Year',
+    y = 'Count'
+    )
+
+fish_graph_2_steelhead <- ggplot(filtered_fish, aes(x = Observed_Date, y = Steelhead)) +
+  geom_line() +
+  labs(
+    title = 'Steelhead Seasonal Observations',
+    x = 'Year',
+    y = 'Count'
+    )
+
+```
+
+```{r}
+
+combined_fishgraph_2 <- fish_graph_2_coho + fish_graph_2_jackcoho + fish_graph_2_steelhead + plot_layout(nrow = 3)
+
+combined_fishgraph_2
+
+```
+
+-   The Coho graph shows a spike in observations of the fish species from just before 2010 and in the latter half of the year.
+
+-   The Jack Coho graph reveals that the species of fish was most observed, from 2001 to 2011, in the years 2003 and 2009.
+
+-   The Steelhead graph provides more evidence towards the above assumption that Steelhead are the most observed, consistently.
+
+### Graph 3: Annual Count
+
+```{r data3}
+
+filtered_fish_yearonly <- filtered_fish %>% 
+  mutate(date_only = year(Observed_Date))
+
+
+coho_annual <- filtered_fish_yearonly %>% 
+  dplyr::select(date_only, Coho)
+
+jackcoho_annual <- filtered_fish_yearonly %>% 
+  dplyr::select(date_only, Jack.Coho)
+
+steelhead_annual <- filtered_fish_yearonly %>% 
+  dplyr::select(date_only, Steelhead)
+  
+  
+```
+
+```{r graph3}
+
+```
+
+Room for caption
+
+### Citation
+
+DART Adult Passage Counts Graphics & Text. Columbia Basin Research. Retrieved January 25, 2024. Accessed February 1, 2024. <https://www.cbr.washington.edu/dart/query/adult_graph_text>
