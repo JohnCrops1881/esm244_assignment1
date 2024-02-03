@@ -23,8 +23,6 @@ library(feasts)
 library(lubridate)
 library(fable)
 library(patchwork)
-library(season)
-library(ggplot2)
 
 ```
 
@@ -33,26 +31,6 @@ library(ggplot2)
 raw_fish <- read.csv(here("data", "willamette_fish_passage.csv"))
 
 ```
-
-# Task 2 Description
-
-## **Part 1: Original time series**
-
--   A finalized, static graph of adult passage for **coho**, **jack coho**, and **steelhead** salmon (you decide if these all occupy the same panel, or if they are in separate panels). Add a figure caption. **Replace NA values with zero.** 
-
--   2 - 3 bullet points summarizing major patterns / notable trends in the salmon passage time series data
-
-## **Part 2: Seasonplots**
-
--   A finalized seasonplot for each species (**coho, jack coho, steelhead)** in its own panel. You can either **facet_wrap**/**facet_grid**, or use **patchwork** or **cowplot**, to make the figure. Add a figure caption.
-
--   Add 2 - 3 bullet points summarizing the major trends you see in the seasonplots.
-
-## **Part 3: Annual counts by species**
-
--   A finalized figure of **annual totals** for fish passage, for each of the 3 species. You decide if this is in a single panel or multiple panels. Add a figure caption. 
-
--   Add 2 - 3 bullet points summarizing major trends you see in the annual totals by species from 2000 - 2010.
 
 ![A Look into the Willamette Fish Ladder](Willamette_Fish_Ladder.jpeg){fig-align="center"}
 
@@ -151,24 +129,72 @@ combined_fishgraph_2
 filtered_fish_yearonly <- filtered_fish %>% 
   mutate(date_only = year(Observed_Date))
 
+filtered_fish_yearonly <- filtered_fish_yearonly[,-5]
+
 
 coho_annual <- filtered_fish_yearonly %>% 
-  dplyr::select(date_only, Coho)
+  dplyr::select(date_only, Coho) %>% 
+  group_by(date_only) %>% 
+  summarise(coho_total_annual = sum(Coho))
 
 jackcoho_annual <- filtered_fish_yearonly %>% 
-  dplyr::select(date_only, Jack.Coho)
+  dplyr::select(date_only, Jack.Coho) %>% 
+  group_by(date_only) %>% 
+  summarise(jackcoho_total_annual = sum(Jack.Coho))
 
 steelhead_annual <- filtered_fish_yearonly %>% 
-  dplyr::select(date_only, Steelhead)
-  
+  dplyr::select(date_only, Steelhead) %>% 
+  group_by(date_only) %>% 
+  summarise(steelhead_total_annual = sum(Steelhead))
   
 ```
 
 ```{r graph3}
 
+fish_graph_3_coho <- ggplot(data = coho_annual, aes(x = date_only, y = coho_total_annual)) +
+  geom_col(fill = 'blue') +
+  labs(
+    title = 'Coho Salmon Annual Count',
+    x = 'Year',
+    y = 'Salmon Count',
+    cex.main = .25
+  ) +
+  theme_minimal()
+
+fish_graph_3_jackcoho <- ggplot(data = jackcoho_annual, aes(x = date_only, y = jackcoho_total_annual)) +
+  geom_col(fill = 'darkorange') +
+  labs(
+    title = 'Jack Coho Salmon Annual Count',
+    x = 'Year',
+    y = 'Salmon Count',
+    cex.main = .25
+  ) +
+  theme_minimal()
+
+fish_graph_3_steelhead <- ggplot(data = steelhead_annual, aes(x = date_only, y = steelhead_total_annual)) +
+  geom_col(fill = 'brown1') +
+  labs(
+    title = 'Steelhead Salmon Annual Count',
+    x = 'Year',
+    y = 'Salmon Count',
+    cex.main = .25
+  ) +
+  theme_minimal()
+
+
+combined_fishgraph_3 <- fish_graph_3_coho + fish_graph_3_jackcoho + fish_graph_3_steelhead + plot_layout(nrow = 3) + plot_annotation(
+  title = 'Salmon Annual Counts by Species',
+  subtitle = 'Observed from the Willamette Falls Fish Ladder'
+)
+
+combined_fishgraph_3
+
+
 ```
 
-Room for caption
+-   The Coho annual counts reveal the same trends- relatively low numbers in the first years in the time series, and a spike in years 2010 onwards.
+
+-   Once again, Steelhead salmon are the most consistently observed species across all years.
 
 ### Citation
 
